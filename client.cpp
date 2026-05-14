@@ -67,8 +67,8 @@ int main(int argc, char *argv[])
             /* Send to the server */
             int count = send_data(conn_id, buf + bytes_sent, n - bytes_sent);
 
-	    if (count == -1)
-		    continue;
+			if (count == -1)
+				continue;
             
             bytes_sent += count;
 

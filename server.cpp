@@ -12,15 +12,15 @@
 #define CHUNKSIZE 512
 
 #define TICK(X)                                                                \
-  struct timespec X;                                                           \
-  clock_gettime(CLOCK_MONOTONIC_RAW, &X)
+	struct timespec X;                                                           \
+	clock_gettime(CLOCK_MONOTONIC_RAW, &X)
 
 #define TOCK(X)                                                                \
-  struct timespec X##_end;                                                     \
-  clock_gettime(CLOCK_MONOTONIC_RAW, &X##_end);                                \
-  printf("Total time = %f seconds\n",                                          \
-         (X##_end.tv_nsec - (X).tv_nsec) / 1000000000.0 +                      \
-             (X##_end.tv_sec - (X).tv_sec))
+	struct timespec X##_end;                                                     \
+	clock_gettime(CLOCK_MONOTONIC_RAW, &X##_end);                                \
+	printf("Total time = %f seconds\n",                                          \
+			(X##_end.tv_nsec - (X).tv_nsec) / 1000000000.0 +                      \
+            (X##_end.tv_sec - (X).tv_sec))
 
 
 int main(int argc, char *argv[])
@@ -39,16 +39,16 @@ int main(int argc, char *argv[])
 	/* Only one client */
     if (argc == 1) {
 
-    	printf("Server starting with one client\n");
+		printf("Server starting with one client\n");
 	    /* Only one client */
-    	int conn_id, fd;
-    	char buf[CHUNKSIZE];
+		int conn_id, fd;
+		char buf[CHUNKSIZE];
 	    /* Wait for connection */
-	    conn_id = wait4connect(INADDR_ANY, htons(8032));
-	    printf("Accepted connection from client\n");
+		conn_id = wait4connect(INADDR_ANY, htons(8032));
+		printf("Accepted connection from client\n");
 
-	    fd = open("file.out", O_CREAT|O_WRONLY|O_TRUNC, 0660);
-	    assert(fd >= 0);
+		fd = open("file.out", O_CREAT|O_WRONLY|O_TRUNC, 0660);
+		assert(fd >= 0);
 
 		uint32_t file_size;
 
@@ -57,28 +57,28 @@ int main(int argc, char *argv[])
 			i += recv_data(conn_id, (char *)&file_size + i, sizeof(uint32_t) - i);
 		} while (i < (int)sizeof(uint32_t));
 
-    	TICK(TIME_A);
-	    do {
+		TICK(TIME_A);
+		do {
 			len = recv_data(conn_id, buf, CHUNKSIZE);
 
 			file_size -= len;
 
 			write(fd, buf, len);
 			/* Files have an # at the end */
-	    } while(file_size > 0);
+		} while(file_size > 0);
 
 		TOCK(TIME_A);
-	    close(fd);
+		close(fd);
 
 	/* Multiple clients. */
     } else {
-    	printf("Server starting with multiple clients\n");
-	    int num_con = 1;
-	    int conn_ids[32];
-	    int file_fd[32];
+		printf("Server starting with multiple clients\n");
+		int num_con = 1;
+		int conn_ids[32];
+		int file_fd[32];
 		/* Used to keep track files that got transmitted */
 		int finished[32] = {0};
-	    num_con = atoi(argv[1]);
+		num_con = atoi(argv[1]);
 		char buf[CHUNKSIZE];
 
 		/* Accept the connections and open the files */
@@ -86,8 +86,8 @@ int main(int argc, char *argv[])
 			char buf[64];
 			sprintf(buf, "file%d.out", i);	
 
-	    	conn_ids[i] = wait4connect(INADDR_ANY, htons(8032));
-	    	file_fd[i] = open(buf, O_CREAT|O_WRONLY|O_TRUNC, 0660);
+			conn_ids[i] = wait4connect(INADDR_ANY, htons(8032));
+			file_fd[i] = open(buf, O_CREAT|O_WRONLY|O_TRUNC, 0660);
 			assert(file_fd[i] > 0);
 			printf("Accepted connection for client %d, writing to file %s\n", i, buf);
 		}
@@ -104,9 +104,9 @@ int main(int argc, char *argv[])
 			} while (j < (int)sizeof(uint32_t));
 		}
 
-    	TICK(TIME_A);
+		TICK(TIME_A);
 		int ok = 0;
-	    do {
+		do {
 			/* Iterate through each connection and read some data */
 			for (int i = 0; i < num_con; i++) {
 
@@ -124,9 +124,9 @@ int main(int argc, char *argv[])
 				}
 				/* Files have an # at the end */
 			}
-	    } while(ok < num_con);
+		} while(ok < num_con);
 
-    	TOCK(TIME_A);
+		TOCK(TIME_A);
 		for (int i = 0; i < num_con; i++) {
 			close(file_fd[i]);
 		}
