@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <cstdio>
+#include <errno.h>
 
 /* ############# USEFUL MACROS ########## */
 #ifdef DEBUG
