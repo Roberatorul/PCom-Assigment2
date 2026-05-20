@@ -37,14 +37,14 @@ void build_segment(char segment[], size_t seg_size, uint8_t protocol_id,
 	memset(segment, 0, sizeof(segment));
 
 	if (type == TYPE_MESSAGE) {
-		struct poli_tcp_data_hdr* hdr = (struct poli_tcp_data_hdr *)&segment;
+		struct poli_tcp_data_hdr* hdr = (struct poli_tcp_data_hdr *)segment;
 		hdr->protocol_id = POLI_PROTOCOL_ID;
 		hdr->conn_id = conn_id;
 		hdr->type = type;
 		hdr->seq_num = num;
 		hdr->len = len;
 	} else {
-		struct poli_tcp_ctrl_hdr* hdr = (struct poli_tcp_ctrl_hdr *)&segment;
+		struct poli_tcp_ctrl_hdr* hdr = (struct poli_tcp_ctrl_hdr *)segment;
 		hdr->protocol_id = protocol_id;
 		hdr->conn_id = conn_id;
 		hdr->type = type;
