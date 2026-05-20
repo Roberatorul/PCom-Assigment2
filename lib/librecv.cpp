@@ -129,10 +129,10 @@ int wait4connect(uint32_t ip, uint16_t port)
 	DIE(rc < 0, "Failed to extract port with getsockname!");
 	uint16_t asgn_port = ntohs(asgn_addr.sin_port);
 
-	/* Build a SYN ACK packet for the client */
+	/* Build a SYN ACK segment for the client */
 	char send_message[MAX_SEGMENT_SIZE];
 	build_segment_hdr(send_message, MAX_SEGMENT_SIZE, POLI_PROTOCOL_ID, conn_id,
-				  TYPE_SYN_ACK, 0, recv_window);
+				  TYPE_SYN_ACK, 1, recv_window);
 	char* payload_ptr = send_message + sizeof(struct poli_tcp_ctrl_hdr);
 	uint16_t sending_port = htons(asgn_port);
 	memcpy(payload_ptr, &sending_port, sizeof(uint16_t));
