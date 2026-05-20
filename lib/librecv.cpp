@@ -173,6 +173,39 @@ int wait4connect(uint32_t ip, uint16_t port)
 				(const struct sockaddr *)&cli_addr, clen);
 	DIE(rc < 0, "Send SYN ACK to client failed!");
 
+	/* Wait for ACK from client */
+	struct pollfd pfd;
+	pfd.fd = con->sockfd;
+	pfd.events = POLLIN;
+
+	int timeout = 500; // ms
+	bool ack_received = false;
+	char ack_buffer[MAX_SEGMENT_SIZE];
+
+	while (!ack_received) {
+		rc = poll(&pfd, 1, timeout);
+
+		if (rc > 0) {
+			struct sockaddr_in ack_addr;
+			socklen_t ack_len = sizeof(struct sockaddr_in);
+
+			int n = recvfrom(con->sockfd, ack_buffer, sizeof(ack_buffer), 0,
+							 (struct sockaddr *)&ack_addr, &ack_len);
+			DIE(n < 0, "Receive control ACK from client failed!");
+
+			struct poli_tcp_ctrl_hdr* ack_hdr = (struct poli_tcp_ctrl_hdr *)ack_buffer;
+			if (ack_hdr->type == TYPE_ACK)
+				ack_received = true;
+		} else if (rc == 0) { // Timeout! Resend SYN ACK
+			rc = sendto(listenfd, send_message, message_len, 0, 
+                        (const struct sockaddr *)&cli_addr, clen);
+            DIE(rc < 0, "Failed to resend SYN-ACK!");
+		} else {
+			fprintf(stderr, "Poll error!");
+			return -1;
+		}
+	}
+
 	/* Since we can have multiple connection, we want to know if data is available
        on the socket used by a given connection. We use POLL for this */
     data_fds[fdmax].fd = con->sockfd;    
