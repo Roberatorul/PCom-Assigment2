@@ -1,5 +1,5 @@
 PROJECT=server client
-SOURCES=server.cpp client.cpp lib/libsend.cpp lib/librecv.cpp lib/libcommon.cpp
+SOURCES=server.cpp client.cpp lib/libsend.cpp lib/librecv.cpp lib/libcommon.cpp lib/protocol.cpp
 LIBRARY=nope
 INCPATHS= -I lib/include
 LIBPATHS=.
@@ -21,10 +21,10 @@ all: $(SOURCES) server client
 
 #$(BINARY): $(OBJECTS)
 server: $(OBJECTS)
-	$(CC) $(LIBFLAGS) $(INCFLAGS) server.cpp lib/librecv.o lib/libcommon.o $(LDFLAGS) -o $@
+	$(CC) $(LIBFLAGS) $(INCFLAGS) server.cpp lib/librecv.o lib/libcommon.o lib/protocol.o $(LDFLAGS) -o $@
 
 client: $(OBJECTS)
-	$(CC) $(LIBFLAGS) $(INCFLAGS) client.cpp lib/libsend.o lib/libcommon.o $(LDFLAGS) -o $@
+	$(CC) $(LIBFLAGS) $(INCFLAGS) client.cpp lib/libsend.o lib/libcommon.o lib/protocol.o $(LDFLAGS) -o $@
 
 .cpp.o:
 	$(CC) $(INCFLAGS) $(CFLAGS) -fPIC $< -o $@
