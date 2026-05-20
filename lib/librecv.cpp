@@ -20,6 +20,9 @@ struct pollfd data_fds[MAX_CONNECTIONS];
 struct pollfd timer_fds[MAX_CONNECTIONS];
 int fdmax = 0;
 
+/* Receiver window size */
+static uint16_t recv_window = 0;
+
 void fill_ipv4_address(struct sockaddr_in* dest, uint16_t port, uint32_t ip) {
 	memset(dest, 0, sizeof(struct sockaddr_in));
 	dest->sin_family = PF_INET;
@@ -88,9 +91,6 @@ void *receiver_handler(void *arg)
 
     
 }
-
-/* Must be changed */
-#define WINDOW_SIZE 512
 
 int wait4connect(uint32_t ip, uint16_t port)
 {
@@ -162,7 +162,7 @@ int wait4connect(uint32_t ip, uint16_t port)
 	/* Build a SYN ACK packet for the client */
 	char send_message[MAX_SEGMENT_SIZE];
 	build_segment(send_message, MAX_SEGMENT_SIZE, POLI_PROTOCOL_ID, conn_id,
-				  TYPE_SYN_ACK, 0, WINDOW_SIZE);
+				  TYPE_SYN_ACK, 0, recv_window);
 	char* payload_ptr = send_message + sizeof(struct poli_tcp_ctrl_hdr);
 	uint16_t sending_port = htons(asgn_port);
 	memcpy(payload_ptr, &sending_port, sizeof(uint16_t));
