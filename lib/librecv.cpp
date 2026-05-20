@@ -97,7 +97,7 @@ int wait4connect(uint32_t ip, uint16_t port)
 	struct sockaddr_in cli_addr;
 	socklen_t clen = sizeof(struct sockaddr_in);
 
-	int rc = recvfrom(listenfd, recv_message, sizeof(recv_message), 0,
+	rc = recvfrom(listenfd, recv_message, sizeof(recv_message), 0,
 					 (struct sockaddr *)&cli_addr, &clen);
 	DIE(rc < 0, "Receive SYN message from client failed!");
 
@@ -131,7 +131,7 @@ int wait4connect(uint32_t ip, uint16_t port)
 
 	/* Build a SYN ACK packet for the client */
 	char send_message[MAX_SEGMENT_SIZE];
-	build_segment(send_message, MAX_SEGMENT_SIZE, POLI_PROTOCOL_ID, conn_id,
+	build_segment_hdr(send_message, MAX_SEGMENT_SIZE, POLI_PROTOCOL_ID, conn_id,
 				  TYPE_SYN_ACK, 0, recv_window);
 	char* payload_ptr = send_message + sizeof(struct poli_tcp_ctrl_hdr);
 	uint16_t sending_port = htons(asgn_port);

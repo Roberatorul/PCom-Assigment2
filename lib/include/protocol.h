@@ -29,6 +29,6 @@ struct __attribute__((packed)) poli_tcp_ctrl_hdr {
 /* Fills dest with specific IPv4 information */
 void fill_ipv4_address(struct sockaddr_in* dest, uint16_t port, uint32_t ip);
 
-/* Creates a segment based on it's `type` */
-void build_segment(char segment[], size_t seg_size, uint8_t protocol_id,
+/* Creates a segment header based on it's `type` */
+void build_segment_hdr(char segment[], size_t seg_size, uint8_t protocol_id,
 				   uint8_t conn_id, uint8_t type, uint16_t num, uint16_t len);
