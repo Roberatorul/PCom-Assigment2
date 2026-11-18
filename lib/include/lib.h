@@ -4,29 +4,46 @@
 #include <cstdint>
 #include "utils.h"
 #include <arpa/inet.h>
+#include <deque>
+#include "protocol.h"
+#include <map>
 
 /* Maximum segment size, change as you see fit */
-#define MAX_DATA_SIZE 512
+#define MAX_DATA_SIZE 1400
 #define MAX_SEGMENT_SIZE (MAX_DATA_SIZE + sizeof(poli_tcp_data_hdr))
 
 #define MAX_CONNECTIONS 32
 
-/* Protocol control block. Used track different parameters about a connection. 
- * Will need to be extenden to solve the homework with other parameters such as
- * last_ack or status depending on how you implement your protocol. */
+struct segment {
+    char data[MAX_SEGMENT_SIZE]; /* Raw buffer to be sent directly over the socket */
+    size_t len; /* header size + data payload size*/
+    uint16_t seq_num;  /* Used for ordering and acknowledgments */
+};
+
+/* Protocol control block. Used to track different parameters about a connection. */
 struct connection {
-    /* common window for both the sender and receiver. */
-    /* list window: A window representation */
+
     int sockfd; /* socket used for this connection */
     int conn_id; /* connection identifier */
     struct sockaddr_in servaddr; /* used to identify the destination */
     pthread_mutex_t con_lock; /* Used for syncronization with the handler thread and read/send calls.*/
 
-    /* TODO. Parameters used only by the sender */
-    int max_window_seq; /* Used to store the max number of packets that can be inflight, since we can
-                           have many more packets in our window */
+	/* Sliding window storing unacknowledged inflight segments */
+	std::deque<segment> window;
 
-    /* TODO. Parameters used only by the client */
+    /* Parameters used only by the sender */
+	uint16_t send_base; /* smallest unacknowledged seq_num */
+	int dup_acks; /* Counter for duplicate ACKs: triggers Fast Retransmit after 3 dup ACKs */
+	uint16_t next_seq_num; /* The seq num that will be assigned to the new payload segment */
+	std::deque<segment> send_queue; /* Backlog of segments waiting to enter the sliding window */
+	uint16_t peer_recv_window; /* Flow control: available buffer space reported by the receiver */
+
+    /* Parameters used only by the receiver */
+	uint16_t expected_recv_seq; /* The exact seq num the receiver needs next to maintain strict order */
+	std::deque<segment> recv_queue; /* Buffer containing segments ready for the application to read */
+	std::map<uint16_t, segment> early_packets; /* Holding area for early segments (key = seq_num)*/
+	struct sockaddr_in cliaddr; /* address of the client that sends SYN */
+	uint16_t recv_data_port; /* data port allocated for this connection */
 };
 
 /* ########## API that we expose to the application ########### */
